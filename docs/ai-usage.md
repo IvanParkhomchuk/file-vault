@@ -807,3 +807,40 @@ On 2026-09-24, the AI agent ran:
 | Source review | The Blade/jQuery interface submits upload and deletion requests asynchronously; server validation rejects unsupported content and files over the 10 MiB limit; application code has no direct mail sending call. This is code review, not a browser interaction or SMTP test. |
 
 The live probe used a temporary queue and cleaned up its records and files. The scheduler's minute-by-minute timing and an actual broker outage were not exercised. The failure probe used an invalid recipient to trigger the publication error path. No independent developer review outcome is recorded.
+
+---
+
+## Prompt 17 — Live Lifecycle and Failure Review
+
+### Goal
+
+Verify the complete implementation against live MySQL, RabbitMQ, and Laravel Scheduler, and close any confirmed gaps.
+
+### Prompt
+
+The developer requested a whole-repository review of migrations, private storage, browser interactions, scheduled and manual deletion, real broker failure, retry and idempotency, documentation accuracy, and the required final checks. The request explicitly prohibited unrelated refactoring and unexecuted success claims.
+
+### Why This Prompt Was Structured This Way
+
+It separates behavior already covered by SQLite and mocks from the remaining integration risks, especially filesystem, database, and broker consistency after a partial deletion.
+
+### AI Contribution
+
+The review found that `FILE_UPLOAD_DISK=public` could write uploaded documents to a web accessible disk. The upload service now checks disk privacy and root location before writing; three tests cover a public disk, a private-labeled disk rooted in `public/`, and a public storage link targeting the upload disk. The README and architecture notes were updated. Existing deletion state, retry, and idempotency code was retained after tests and live probes confirmed those paths.
+
+### Developer Review and Actual Verification
+
+No independent human review result was provided. On 2026-09-24, the AI agent executed:
+
+| Check | Actual result |
+| --- | --- |
+| `./vendor/bin/pint --test` | Passed. |
+| `php artisan test` | Passed after narrowing a test assertion that had included Laravel's existing public-disk `.gitignore`: 28 tests, 164 assertions. |
+| `npm run build` | Passed; Vite built CSS and JavaScript assets. |
+| `docker compose up --build -d`, `docker compose ps`, `docker compose exec -T app php artisan migrate:status` | Passed; app, MySQL, and RabbitMQ were healthy, scheduler was running, and all migrations had run on MySQL 8.4.7. |
+| Live MySQL/RabbitMQ probe in the app container | Passed: a temporary record had the 24-hour expiry; a connection to RabbitMQ port 1 failed; the physical file was absent while the row retained deletion time/source; retry with the live broker published one message with the original manual source; a repeated deletion found no row and produced no second message. The temporary queue was removed. |
+| `docker compose exec -T -e DELETION_NOTIFICATION_EMAIL=probe@example.test scheduler php artisan schedule:run -v` | Passed: the scheduled command removed one expired MySQL row and physical file, and published one RabbitMQ message with `expiration` source. A second scheduler run produced no message. The probe message was consumed. |
+| Browser interaction | Not executed: browser discovery returned no available browser. The JavaScript upload/list/delete and client error branches were reviewed, while existing HTTP tests cover server responses; a real browser flow remains unverified. |
+| `git diff --check` | Passed with no whitespace errors. |
+
+The current local Compose `.env` lacks `DELETION_NOTIFICATION_EMAIL`, so the scheduler probe supplied a temporary environment override. An unattended run with this local configuration would fail publication until the required address is set. A broker confirmation lost after acceptance, or a database failure after confirmation, can still cause a duplicate on retry; the message's file ID and deletion time support consumer deduplication as described in the architecture. The exact minute-by-minute behavior of the long-running scheduler daemon was not observed in this review.

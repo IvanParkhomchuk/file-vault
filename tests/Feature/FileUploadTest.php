@@ -108,6 +108,46 @@ class FileUploadTest extends TestCase
         $this->assertSame([], Storage::disk(config('filesystems.uploads_disk'))->allFiles());
     }
 
+    public function test_upload_rejects_a_public_disk_even_when_selected_by_configuration(): void
+    {
+        config()->set('filesystems.uploads_disk', 'public');
+
+        $this->postJson(route('files.store'), [
+            'file' => $this->pdf('report.pdf'),
+        ])->assertInternalServerError();
+
+        $this->assertDatabaseCount('stored_files', 0);
+        $this->assertSame([], Storage::disk('public')->allFiles('documents'));
+    }
+
+    public function test_upload_rejects_a_private_label_on_a_web_accessible_root(): void
+    {
+        config()->set('filesystems.disks.exposed_uploads', [
+            'driver' => 'local',
+            'root' => public_path(),
+            'visibility' => 'private',
+        ]);
+        config()->set('filesystems.uploads_disk', 'exposed_uploads');
+
+        $this->postJson(route('files.store'), [
+            'file' => $this->pdf('report.pdf'),
+        ])->assertInternalServerError();
+
+        $this->assertDatabaseCount('stored_files', 0);
+    }
+
+    public function test_upload_rejects_a_private_disk_exposed_by_a_public_storage_link(): void
+    {
+        config()->set('filesystems.links', [public_path('documents') => storage_path('app/uploads')]);
+
+        $this->postJson(route('files.store'), [
+            'file' => $this->pdf('report.pdf'),
+        ])->assertInternalServerError();
+
+        $this->assertDatabaseCount('stored_files', 0);
+        $this->assertSame([], Storage::disk(config('filesystems.uploads_disk'))->allFiles('documents'));
+    }
+
     private function pdf(string $name): UploadedFile
     {
         return UploadedFile::fake()->createWithContent($name, "%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF");
