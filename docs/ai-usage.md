@@ -14,7 +14,7 @@ The goal is to provide transparency about:
 
 AI was used as a development assistant, not as the source of truth.
 
-The completed implementation will be validated against:
+The implementation was reviewed against:
 
 * `docs/requirements.md`;
 * `docs/architecture.md`;
@@ -47,7 +47,7 @@ docs/
     └── architecture.md
 ```
 
-This keeps individual prompts focused on the task instead of repeatedly embedding the complete project specification.
+This describes the original prompt structure. The final verification recorded below used the repository instructions and documentation directly; use of those named local skills was not verified in that session.
 
 ---
 
@@ -248,11 +248,11 @@ The prompt explicitly preserves the required frontend stack and asks for server-
 
 ### AI Contribution
 
-*To be completed after implementation.*
+No separate execution outcome is recorded for this earlier prompt. The implemented upload path is described under Prompt 11.
 
 ### Developer Review
 
-*To be completed after implementation.*
+No separate developer review outcome is recorded for this prompt.
 
 ---
 
@@ -293,11 +293,11 @@ The controller-specific negative instruction prevents business and infrastructur
 
 ### AI Contribution
 
-*To be completed after implementation.*
+No separate execution outcome is recorded for this earlier prompt. The implemented deletion path is described under Prompt 14.
 
 ### Developer Review
 
-*To be completed after implementation.*
+No separate developer review outcome is recorded for this prompt.
 
 ---
 
@@ -339,11 +339,11 @@ This prevents the scheduled implementation from becoming a second independent de
 
 ### AI Contribution
 
-*To be completed after implementation.*
+No separate execution outcome is recorded for this earlier prompt. The implemented expiration path is described under Prompt 15.
 
 ### Developer Review
 
-*To be completed after implementation.*
+No separate developer review outcome is recorded for this prompt.
 
 ---
 
@@ -385,11 +385,11 @@ The negative instruction against a generic messaging framework keeps the solutio
 
 ### AI Contribution
 
-*To be completed after implementation.*
+No separate execution outcome is recorded for this earlier prompt. The publisher implementation is described under Prompt 13.
 
 ### Developer Review
 
-*To be completed after implementation.*
+No separate developer review outcome is recorded for this prompt.
 
 ---
 
@@ -442,11 +442,11 @@ It explicitly prevents the AI from claiming verification that was not performed.
 
 ### AI Contribution
 
-*To be completed after final verification.*
+The final review and documentation updates are recorded under Prompt 16.
 
 ### Developer Review
 
-*To be completed after final verification.*
+No independent developer review outcome was provided in the final verification session.
 
 ---
 
@@ -728,44 +728,82 @@ Pending developer review. Verification outcomes accompany this change.
 
 ---
 
-## Final AI Usage Summary
+## Prompt 16 — Final End-to-End Verification and Documentation
 
-Complete this section before submission.
+### Goal
+
+Check the finished implementation against the assignment and project documents, run the required commands, exercise live infrastructure where available, and correct stale documentation.
+
+### Prompt
+
+```text
+Наскрізна перевірка і документація
+
+Проведи завершальну перевірку реалізації за Test_task__Middle_PHP.docx, AGENTS.md, docs/requirements.md і docs/architecture.md. Не змінюй вимоги та не роби сторонніх
+рефакторингів.
+
+Перевір повний сценарій:
+1. асинхронне завантаження PDF і DOCX;
+2. відхилення недопустимого типу та файлу понад 10 МБ;
+3. відображення списку;
+4. ручне видалення і RabbitMQ повідомлення;
+5. автоматичне видалення після 24 годин і RabbitMQ повідомлення;
+6. відновлення після помилки публікації;
+7. відсутність прямого надсилання email.
+
+Перевір узгодженість README.md, .env.example, docs/architecture.md, docs/implementation-plan.md і docs/ai-usage.md з реальною реалізацією. Запиши в docs/ai-usage.md
+суттєві використані промпти, рішення, внесок AI і результат перевірки розробником — без вигаданих тверджень.
+
+Запусти ./vendor/bin/pint --test, php artisan test і npm run build. Якщо середовище дозволяє, окремо перевір інтеграцію з MySQL і RabbitMQ через Docker Compose. Не
+позначай перевірку успішною, якщо її не запускав. Наприкінці дай коротку матрицю «вимога → реалізація → доказ перевірки», перелік змінених файлів і залишкових
+обмежень.
+```
+
+### Why This Prompt Was Structured This Way
+
+It names the assignment and product documents, specifies every lifecycle path, requires the repository verification commands, and separates live integration evidence from ordinary automated tests. The prohibition on invented results keeps the review record factual.
+
+### AI Contribution
+
+AI compared the assignment and current code, identified stale setup and plan text, updated `README.md`, `.env.example`, `docs/architecture.md`, and `docs/implementation-plan.md`, and ran the checks recorded below. It rebuilt the stale Docker application image before running an isolated integration probe. The probe created temporary records on MySQL and used a unique RabbitMQ queue for manual deletion, failed publication followed by retry, and an expired-file command run. It consumed the probe messages and removed its records, files, and queue.
+
+### Developer Review
+
+No independent developer review result was provided in this session. The checks below were executed by the AI agent; they should not be described as developer-executed verification.
+
+---
+
+## Final AI Usage Summary
 
 ### AI Was Used For
 
-* architecture assistance;
-* implementation assistance;
-* test generation/review;
-* debugging;
-* code review;
-* documentation.
-
-Remove items that were not actually used.
+* architecture and implementation assistance recorded in Prompts 1–15;
+* test generation and review recorded in the implementation history;
+* debugging the stale Docker image and reviewing the final code and documentation;
+* documentation updates and final verification recorded in Prompt 16.
 
 ### Developer Responsibilities
 
-The developer remained responsible for:
+The developer remains responsible for:
 
 * interpreting the assignment;
 * selecting the final architecture;
 * reviewing generated code;
-* rejecting unnecessary complexity;
-* validating application behavior;
-* executing tests and verification;
+* accepting or rejecting implementation decisions;
+* independently validating application behavior and verification evidence;
 * ensuring the final implementation satisfies the assignment.
 
 ### Final Verification
 
-Record the final commands and their outcomes here before submission.
+On 2026-09-24, the AI agent ran:
 
-```text
-Command:
-Result:
+| Check | Result |
+| --- | --- |
+| `./vendor/bin/pint --test` | Passed. |
+| `php artisan test` | Passed: 25 tests, 156 assertions. The test suite uses SQLite and a mocked RabbitMQ publishing boundary. |
+| `npm run build` | Passed; Vite generated the production assets. |
+| `docker compose up --build -d` | Passed after discovering the previous container image lacked the current deletion code. The app, MySQL, and RabbitMQ reported healthy; scheduler was running. |
+| Isolated probe inside the rebuilt app container | Passed against MySQL and RabbitMQ: manual deletion, broker message payload, retained metadata after a deliberately invalid recipient, successful retry with the original deletion time, and `files:delete-expired` with an expired test record and broker message. |
+| Source review | The Blade/jQuery interface submits upload and deletion requests asynchronously; server validation rejects unsupported content and files over the 10 MiB limit; application code has no direct mail sending call. This is code review, not a browser interaction or SMTP test. |
 
-Command:
-Result:
-
-Command:
-Result:
-```
+The live probe used a temporary queue and cleaned up its records and files. The scheduler's minute-by-minute timing and an actual broker outage were not exercised. The failure probe used an invalid recipient to trigger the publication error path. No independent developer review outcome is recorded.

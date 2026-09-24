@@ -19,7 +19,7 @@ Browser
    │
    │ asynchronous request
    ▼
-FileController
+FileUploadController
    │
    ▼
 Request Validation
@@ -230,7 +230,7 @@ Do not introduce a generic event bus or messaging framework for this project.
 
 The publisher sends one persistent JSON message to the configured durable RabbitMQ queue. The message has `type: "file.deleted"`, `version: 1`, `recipient_email`, `file_id`, `original_name`, `deleted_at` (ISO 8601), and `deletion_source` (`manual` or `expiration`). The external consumer uses these fields to address and describe the email; this application does not send it.
 
-The publisher waits for a broker confirmation before returning. A connection, routing, or confirmation failure raises a publication exception; it is never treated as a successful deletion. The future shared deletion workflow must keep the metadata record until publication is confirmed so a failed attempt remains visible and retryable. If a confirmation is lost after the broker accepted a message, a retry can publish a duplicate. The publisher alone does not provide atomicity across storage, database, and RabbitMQ.
+The publisher waits for a broker confirmation before returning. A connection, routing, or confirmation failure raises a publication exception; it is never treated as a successful deletion. The shared deletion workflow keeps the metadata record until publication is confirmed so a failed attempt remains visible and retryable. If a confirmation is lost after the broker accepted a message, a retry can publish a duplicate. The publisher alone does not provide atomicity across storage, database, and RabbitMQ.
 
 ---
 
