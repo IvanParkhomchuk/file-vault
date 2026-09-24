@@ -1,6 +1,6 @@
 # File Lifecycle Manager
 
-Laravel 13 project for temporary PDF and DOCX storage. The application features are planned in [docs/implementation-plan.md](docs/implementation-plan.md). The repository currently includes server-side upload and file metadata storage; the upload interface, management, expiration processing, and RabbitMQ publication are still to be implemented.
+Laravel 13 project for temporary PDF and DOCX storage. The application features are planned in [docs/implementation-plan.md](docs/implementation-plan.md). The repository currently includes server-side upload, file metadata storage, and a file management page. Manual deletion, expiration processing, and RabbitMQ publication are still to be implemented.
 
 ## Docker setup
 
@@ -11,7 +11,7 @@ Docker Compose builds the Laravel application with PHP 8.4 and compiled Bootstra
 3. Run `docker compose up --build -d`.
 4. Check startup with `docker compose ps` and `docker compose logs app`.
 
-Open the starter page at `http://localhost:8000` (or the configured `APP_PORT`). RabbitMQ Management is available at `http://localhost:15672` (or the configured `RABBITMQ_MANAGEMENT_PORT`) with the credentials in `.env`.
+Open the file management page at `http://localhost:8000` (or the configured `APP_PORT`). RabbitMQ Management is available at `http://localhost:15672` (or the configured `RABBITMQ_MANAGEMENT_PORT`) with the credentials in `.env`.
 
 The application waits for MySQL and RabbitMQ health checks. It creates a persistent application key when `APP_KEY` is empty and runs Laravel migrations on application startup. The scheduler starts after the application is healthy; expiration commands will be registered in a later feature stage. MySQL data, RabbitMQ data, and Laravel storage persist in Docker volumes. Use `docker compose down` to stop the stack without removing those volumes.
 
@@ -34,7 +34,7 @@ On macOS with Homebrew, start installed services when needed with `brew services
 
 Uploaded file content should be written through the Laravel disk selected by `FILE_UPLOAD_DISK` (default: `uploads`). This disk stores files under `storage/app/uploads`, outside the public web root. Keep any replacement disk private; never select the `public` disk for uploaded documents. The metadata record stores the disk and relative path so later deletion attempts can locate the original object even if the configured default changes.
 
-The default Laravel page is available at `http://localhost:8000`. Bootstrap and jQuery are installed through Vite. The server accepts one multipart file at `POST /files` in the `file` field. Submit it with `Accept: application/json`; success returns HTTP 201 with the file ID, original name, MIME type, byte size, upload time, and expiration time. Invalid files return HTTP 422 with JSON validation errors. PDF and DOCX are accepted up to 10 MiB, with MIME type and extension checked on the server. The asynchronous upload interface, management, expiration processing, and RabbitMQ publication are not implemented yet.
+The file management page is available at `http://localhost:8000`. It shows saved files and uploads a selected file asynchronously with Bootstrap and jQuery. After upload, the browser refreshes the list from `GET /files`. The server accepts one multipart file at `POST /files` in the `file` field. Submit it with `Accept: application/json`; success returns HTTP 201 with the file ID, original name, MIME type, byte size, upload time, and expiration time. Invalid files return HTTP 422 with JSON validation errors. PDF and DOCX are accepted up to 10 MiB, with MIME type and extension checked on the server. The manual deletion control is disabled until the shared deletion workflow and its HTTP endpoint are implemented. Expiration processing and RabbitMQ publication are also pending.
 
 For a production asset bundle, run `npm run build`.
 

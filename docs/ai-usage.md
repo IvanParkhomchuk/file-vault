@@ -552,19 +552,17 @@ Add the smallest private-storage metadata foundation for PDF/DOCX uploads.
 ### Prompt
 
 ```text
-Прочитай AGENTS.md, docs/requirements.md, docs/architecture.md і перевір поточний стан репозиторію.
+Read AGENTS.md, docs/requirements.md, and docs/architecture.md, then inspect the current repository state.
 
-Підготуй мінімальну основу для зберігання PDF/DOCX файлів:
-- додай MySQL-сумісну міграцію та Eloquent-модель метаданих;
-- передбач оригінальну назву, ідентифікатор або шлях у Laravel Filesystem, тип, розмір, час завантаження і час закінчення 24-годинного терміну;
-- обери диск зберігання через конфігурацію; файли не мають бути напряму доступні з public web root;
-- не зберігай вміст файлів у БД.
+Prepare the minimum foundation for storing PDF/DOCX files:
+- add a MySQL-compatible migration and an Eloquent metadata model;
+- include the original name, Laravel Filesystem identifier or path, type, size, upload time, and end of the 24-hour retention period;
+- choose the storage disk through configuration; files must not be directly accessible from the public web root;
+- do not store file contents in the database.
 
-Спершу перевір, які поля справді потрібні для завантаження, списку, видалення та повторної обробки помилок. Не додавай таблиць, статусів чи абстракцій без конкретної
-потреби. Не реалізовуй HTTP endpoints або інтерфейс на цьому кроці.
+First, check which fields are needed for upload, listing, deletion, and retrying failures. Do not add tables, statuses, or abstractions without a concrete need. Do not implement HTTP endpoints or an interface at this stage.
 
-Додай змістовні тести для моделі та схеми, якщо вони перевіряють поведінку, а не повторюють структуру міграції. Запусти релевантні перевірки з AGENTS.md. Підсумуй
-рішення, змінені файли, результати команд і відкриті ризики.
+Add meaningful model and schema tests if they verify behavior rather than repeat the migration structure. Run the relevant checks from AGENTS.md. Summarize decisions, changed files, command results, and open risks.
 ```
 
 ### Why This Prompt Was Structured This Way
@@ -609,6 +607,34 @@ AI added a thin upload controller, a service coordinating storage and metadata, 
 ### Developer Review
 
 Pending developer review. Verification outcomes are reported with the implementation.
+
+---
+
+## Prompt 12 — File Management Page
+
+### Goal
+
+Build one file management page with asynchronous upload and a list of saved files.
+
+### Prompt
+
+```text
+Read AGENTS.md and docs/requirements.md, then inspect the existing routes, Blade, CSS, and JavaScript.
+Build one dedicated file management page with Blade, Bootstrap, and jQuery:
+show stored files with useful metadata; upload files asynchronously without reloading the page; refresh the list after success; show understandable validation and network errors; prepare manual deletion for an endpoint in the next step, or connect it if the endpoint already exists. The server remains the source of validation rules. Do not add a frontend framework, authorization, editing, preview, or download. Add useful HTTP behavior tests and run the relevant checks.
+```
+
+### Why This Prompt Was Structured This Way
+
+The prompt limits the interface to the required stack and preserves server validation. It explicitly allows a disabled deletion control because the deletion workflow belongs to a later stage.
+
+### AI Contribution
+
+AI added the Blade management page, a server-rendered list endpoint for refresh after upload, jQuery upload and error handling, HTTP tests, and updated usage instructions.
+
+### Developer Review
+
+Pending developer review. The deletion endpoint did not exist, so the control remains disabled. Verification results accompany this change.
 
 ---
 

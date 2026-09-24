@@ -17,6 +17,10 @@ Use the relevant documentation when the task requires it:
 
 Do not duplicate detailed product requirements in this file.
 
+## Language
+
+Use English for all repository text, including interface copy, accessibility labels, tests, code comments, and documentation.
+
 ## Required Stack
 
 * PHP 8+
