@@ -638,6 +638,35 @@ Pending developer review. The deletion endpoint did not exist, so the control re
 
 ---
 
+## Prompt 13 — RabbitMQ Deletion Publication Boundary
+
+### Goal
+
+Implement only deletion notification publication, leaving deletion workflows and email delivery for their respective owners.
+
+### Prompt
+
+```text
+Read AGENTS.md, requirements, architecture, and current code. Document the
+message format and publication-failure rule first. Add a small testable
+php-amqplib publisher, Laravel configuration and .env.example settings,
+and broker-free tests for configuration, payload, and failure. Run Pint and tests.
+```
+
+### Why This Prompt Was Structured This Way
+
+It keeps the RabbitMQ integration narrow and makes broker confirmation and failure behavior explicit before implementation.
+
+### AI Contribution
+
+AI documented the JSON contract and failure rule, added the publisher interface and RabbitMQ implementation, configured its queue and recipient, and added broker-free tests.
+
+### Developer Review
+
+Pending developer review. Manual and scheduled deletion have not yet been implemented, so the publisher is not called by those paths yet.
+
+---
+
 ## Final AI Usage Summary
 
 Complete this section before submission.

@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'rabbitmq' => [
+        'host' => env('RABBITMQ_HOST', '127.0.0.1'),
+        'port' => (int) env('RABBITMQ_PORT', 5672),
+        'user' => env('RABBITMQ_USER'),
+        'password' => env('RABBITMQ_PASSWORD'),
+        'vhost' => env('RABBITMQ_VHOST', '/'),
+        'queue' => env('RABBITMQ_DELETION_QUEUE', 'file_deletions'),
+        'recipient_email' => env('DELETION_NOTIFICATION_EMAIL'),
+    ],
+
 ];

@@ -1,13 +1,13 @@
 # File Lifecycle Manager
 
-Laravel 13 project for temporary PDF and DOCX storage. The application features are planned in [docs/implementation-plan.md](docs/implementation-plan.md). The repository currently includes server-side upload, file metadata storage, and a file management page. Manual deletion, expiration processing, and RabbitMQ publication are still to be implemented.
+Laravel 13 project for temporary PDF and DOCX storage. The application features are planned in [docs/implementation-plan.md](docs/implementation-plan.md). The repository currently includes server-side upload, file metadata storage, a file management page, and a RabbitMQ deletion notification publisher. Manual deletion and expiration processing are still to be implemented.
 
 ## Docker setup
 
 Docker Compose builds the Laravel application with PHP 8.4 and compiled Bootstrap/jQuery assets, then starts MySQL 8.4, RabbitMQ 4.3, and a Laravel Scheduler process. Local PHP, Composer, Node.js, MySQL, and RabbitMQ installations are unnecessary for this path.
 
 1. Copy `.env.example` to `.env`.
-2. Set nonempty values for `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `RABBITMQ_USER`, and `RABBITMQ_PASSWORD` in `.env`. You may change `APP_PORT` and `RABBITMQ_MANAGEMENT_PORT` if those host ports are occupied.
+2. Set nonempty values for `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, and `DELETION_NOTIFICATION_EMAIL` in `.env`. You may change `APP_PORT` and `RABBITMQ_MANAGEMENT_PORT` if those host ports are occupied.
 3. Run `docker compose up --build -d`.
 4. Check startup with `docker compose ps` and `docker compose logs app`.
 
@@ -34,7 +34,9 @@ On macOS with Homebrew, start installed services when needed with `brew services
 
 Uploaded file content should be written through the Laravel disk selected by `FILE_UPLOAD_DISK` (default: `uploads`). This disk stores files under `storage/app/uploads`, outside the public web root. Keep any replacement disk private; never select the `public` disk for uploaded documents. The metadata record stores the disk and relative path so later deletion attempts can locate the original object even if the configured default changes.
 
-The file management page is available at `http://localhost:8000`. It shows saved files and uploads a selected file asynchronously with Bootstrap and jQuery. After upload, the browser refreshes the list from `GET /files`. The server accepts one multipart file at `POST /files` in the `file` field. Submit it with `Accept: application/json`; success returns HTTP 201 with the file ID, original name, MIME type, byte size, upload time, and expiration time. Invalid files return HTTP 422 with JSON validation errors. PDF and DOCX are accepted up to 10 MiB, with MIME type and extension checked on the server. The manual deletion control is disabled until the shared deletion workflow and its HTTP endpoint are implemented. Expiration processing and RabbitMQ publication are also pending.
+The file management page is available at `http://localhost:8000`. It shows saved files and uploads a selected file asynchronously with Bootstrap and jQuery. After upload, the browser refreshes the list from `GET /files`. The server accepts one multipart file at `POST /files` in the `file` field. Submit it with `Accept: application/json`; success returns HTTP 201 with the file ID, original name, MIME type, byte size, upload time, and expiration time. Invalid files return HTTP 422 with JSON validation errors. PDF and DOCX are accepted up to 10 MiB, with MIME type and extension checked on the server. The manual deletion control is disabled until the shared deletion workflow and its HTTP endpoint are implemented. Expiration processing is also pending.
+
+The deletion publisher uses `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, and `RABBITMQ_VHOST`. It declares a durable queue named by `RABBITMQ_DELETION_QUEUE` and sends a persistent JSON message addressed to `DELETION_NOTIFICATION_EMAIL`. See [docs/architecture.md](docs/architecture.md) for the message contract and failure rule. The application does not send email.
 
 For a production asset bundle, run `npm run build`.
 
