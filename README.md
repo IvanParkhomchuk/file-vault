@@ -13,7 +13,7 @@ Docker Compose builds the Laravel application with PHP 8.4 and compiled Bootstra
 
 Open the file management page at `http://localhost:8000` (or the configured `APP_PORT`). RabbitMQ Management is available at `http://localhost:15672` (or the configured `RABBITMQ_MANAGEMENT_PORT`) with the credentials in `.env`.
 
-The application waits for MySQL and RabbitMQ health checks. It creates a persistent application key when `APP_KEY` is empty and runs Laravel migrations on application startup. The scheduler starts after the application is healthy; expiration commands will be registered in a later feature stage. MySQL data, RabbitMQ data, and Laravel storage persist in Docker volumes. Use `docker compose down` to stop the stack without removing those volumes.
+The application waits for MySQL and RabbitMQ health checks. It creates a persistent application key when `APP_KEY` is empty and runs Laravel migrations on application startup. The existing `scheduler` service runs `php artisan schedule:work`, which invokes `files:delete-expired` every minute. MySQL data, RabbitMQ data, and Laravel storage persist in Docker volumes. Use `docker compose down` to stop the stack without removing those volumes.
 
 ## Local requirements
 
@@ -32,9 +32,11 @@ On macOS with Homebrew, start installed services when needed with `brew services
 4. Run `php artisan migrate`.
 5. Run `npm run dev` and `php artisan serve` in separate terminals.
 
+For automatic expiration without Docker, also run `php artisan schedule:work` in a separate terminal. You can invoke one expiration pass with `php artisan files:delete-expired`.
+
 Uploaded file content should be written through the Laravel disk selected by `FILE_UPLOAD_DISK` (default: `uploads`). This disk stores files under `storage/app/uploads`, outside the public web root. Keep any replacement disk private; never select the `public` disk for uploaded documents. The metadata record stores the disk and relative path so later deletion attempts can locate the original object even if the configured default changes.
 
-The file management page is available at `http://localhost:8000`. It shows saved files and uploads a selected file asynchronously with Bootstrap and jQuery. After upload, the browser refreshes the list from `GET /files`. The server accepts one multipart file at `POST /files` in the `file` field. Submit it with `Accept: application/json`; success returns HTTP 201 with the file ID, original name, MIME type, byte size, upload time, and expiration time. Invalid files return HTTP 422 with JSON validation errors. PDF and DOCX are accepted up to 10 MiB, with MIME type and extension checked on the server. The manual deletion control is disabled until the shared deletion workflow and its HTTP endpoint are implemented. Expiration processing is also pending.
+The file management page is available at `http://localhost:8000`. It shows saved files and uploads a selected file asynchronously with Bootstrap and jQuery. After upload, the browser refreshes the list from `GET /files`. The server accepts one multipart file at `POST /files` in the `file` field. Submit it with `Accept: application/json`; success returns HTTP 201 with the file ID, original name, MIME type, byte size, upload time, and expiration time. Invalid files return HTTP 422 with JSON validation errors. PDF and DOCX are accepted up to 10 MiB, with MIME type and extension checked on the server. The manual deletion control is disabled until the shared deletion workflow and its HTTP endpoint are implemented. Expiration is processed by the scheduler described above.
 
 The deletion publisher uses `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, and `RABBITMQ_VHOST`. It declares a durable queue named by `RABBITMQ_DELETION_QUEUE` and sends a persistent JSON message addressed to `DELETION_NOTIFICATION_EMAIL`. See [docs/architecture.md](docs/architecture.md) for the message contract and failure rule. The application does not send email.
 

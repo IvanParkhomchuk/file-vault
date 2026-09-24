@@ -697,6 +697,37 @@ Pending developer review.
 
 ---
 
+## Prompt 15 — Automatic Expiration
+
+### Goal
+
+Run the shared deletion workflow after the stored 24-hour expiration time and recover pending publications.
+
+### Prompt
+
+```text
+Read AGENTS.md, requirements, architecture, and the shared deletion implementation.
+Add a Laravel command that finds expired files by their stored expiration time,
+uses the manual endpoint's deletion workflow, and runs through Scheduler.
+Make repeated runs safe, retry unfinished publications, process records in batches,
+and keep going when one record fails. Test the time boundary, retries, failures,
+and publication. Run Pint and the test suite.
+```
+
+### Why This Prompt Was Structured This Way
+
+The prompt ties expiration to persisted metadata and the existing retry scheme. It explicitly requires per-record failure isolation and reuse of the deletion workflow.
+
+### AI Contribution
+
+AI added a batched expiration command, scheduled it every minute, and added behavioral tests for boundary timing, publication, retries, and failure isolation.
+
+### Developer Review
+
+Pending developer review. Verification outcomes accompany this change.
+
+---
+
 ## Final AI Usage Summary
 
 Complete this section before submission.
