@@ -1,6 +1,6 @@
 # File Lifecycle Manager
 
-Laravel 13 project for temporary PDF and DOCX storage. The application features are planned in [docs/implementation-plan.md](docs/implementation-plan.md); the current repository contains the Laravel foundation and required client libraries only.
+Laravel 13 project for temporary PDF and DOCX storage. The application features are planned in [docs/implementation-plan.md](docs/implementation-plan.md). The repository currently includes file metadata storage; upload, management, expiration processing, and RabbitMQ publication are still to be implemented.
 
 ## Docker setup
 
@@ -31,6 +31,8 @@ On macOS with Homebrew, start installed services when needed with `brew services
 3. Start MySQL, create a database and user, then set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` in `.env`.
 4. Run `php artisan migrate`.
 5. Run `npm run dev` and `php artisan serve` in separate terminals.
+
+Uploaded file content should be written through the Laravel disk selected by `FILE_UPLOAD_DISK` (default: `uploads`). This disk stores files under `storage/app/uploads`, outside the public web root. Keep any replacement disk private; never select the `public` disk for uploaded documents. The metadata record stores the disk and relative path so later deletion attempts can locate the original object even if the configured default changes.
 
 The default Laravel page is available at `http://localhost:8000`. Bootstrap and jQuery are installed through Vite. File upload, management, expiration, and RabbitMQ publication are not implemented yet.
 

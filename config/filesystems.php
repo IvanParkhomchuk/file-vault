@@ -15,6 +15,8 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    'uploads_disk' => env('FILE_UPLOAD_DISK', 'uploads'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
@@ -29,6 +31,13 @@ return [
     */
 
     'disks' => [
+
+        'uploads' => [
+            'driver' => 'local',
+            'root' => storage_path('app/uploads'),
+            'visibility' => 'private',
+            'throw' => true,
+        ],
 
         'local' => [
             'driver' => 'local',

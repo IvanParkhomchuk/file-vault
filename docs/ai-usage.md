@@ -543,6 +543,44 @@ Pending developer review. Compose configuration, image build, service health, da
 
 ---
 
+## Prompt 10 — File Metadata Foundation
+
+### Goal
+
+Add the smallest private-storage metadata foundation for PDF/DOCX uploads.
+
+### Prompt
+
+```text
+Прочитай AGENTS.md, docs/requirements.md, docs/architecture.md і перевір поточний стан репозиторію.
+
+Підготуй мінімальну основу для зберігання PDF/DOCX файлів:
+- додай MySQL-сумісну міграцію та Eloquent-модель метаданих;
+- передбач оригінальну назву, ідентифікатор або шлях у Laravel Filesystem, тип, розмір, час завантаження і час закінчення 24-годинного терміну;
+- обери диск зберігання через конфігурацію; файли не мають бути напряму доступні з public web root;
+- не зберігай вміст файлів у БД.
+
+Спершу перевір, які поля справді потрібні для завантаження, списку, видалення та повторної обробки помилок. Не додавай таблиць, статусів чи абстракцій без конкретної
+потреби. Не реалізовуй HTTP endpoints або інтерфейс на цьому кроці.
+
+Додай змістовні тести для моделі та схеми, якщо вони перевіряють поведінку, а не повторюють структуру міграції. Запусти релевантні перевірки з AGENTS.md. Підсумуй
+рішення, змінені файли, результати команд і відкриті ризики.
+```
+
+### Why This Prompt Was Structured This Way
+
+The prompt bounded the work to persistence and required a review of retry needs before adding state or tables.
+
+### AI Contribution
+
+AI added the metadata schema, automatic expiration timestamps, a private upload disk setting, and tests for persistence, expiration boundary, and storage configuration.
+
+### Developer Review
+
+Pending developer review. The schema omits deletion status and stores the original disk to support later retries when configuration changes. Verification results are reported with this change.
+
+---
+
 ## Final AI Usage Summary
 
 Complete this section before submission.

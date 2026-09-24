@@ -93,6 +93,10 @@ Potential metadata includes:
 
 Do not store physical file contents in the database.
 
+The `stored_files` table holds the original name, Laravel filesystem disk and relative path, MIME type, byte size, upload time, and expiry time. Eloquent assigns `uploaded_at` on creation and sets `expires_at` exactly 24 hours later. The configured upload disk defaults to a private local disk outside the public web root. Each record retains its disk name so a later configuration change does not prevent deletion or retry of an existing file.
+
+No deletion status or extra table is needed at this stage. A future shared deletion workflow can retain the metadata record until storage deletion and RabbitMQ publication succeed, then remove it. Publication failure after physical deletion remains a partial state to handle in that workflow; this schema alone does not provide exactly-once publication.
+
 ---
 
 ### File Storage
