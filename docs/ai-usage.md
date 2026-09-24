@@ -868,3 +868,39 @@ The review found that the running Docker PHP configuration allowed only 2M file 
 ### Developer Review and Actual Verification
 
 No independent developer review result was provided. On 2026-09-24, the AI agent ran `./vendor/bin/pint --test` (passed), `php artisan test` (29 tests and 167 assertions passed), `npm run build` (passed), and `git diff --check` (passed). The running Compose services were healthy. The existing app container reported PHP limits of 2M and 8M. `docker compose build app` passed, and a disposable container from the rebuilt image reported 10M and 12M. The running app and scheduler containers were not replaced, so their new PHP limits were not verified in a live HTTP upload. No real browser upload was exercised in this review.
+
+---
+
+## Prompt 19 — File Management Interface Redesign
+
+### Goal
+
+Make the existing file management page more pleasant and clear to use after reviewing the project documentation.
+
+### Prompt
+
+The developer asked the AI assistant to analyze the `docs/` files to understand the project and redesign the interface.
+
+### Why This Prompt Was Structured This Way
+
+The request prioritized the existing product requirements and allowed visual decisions within the required Blade, Bootstrap, and jQuery stack.
+
+### AI Contribution
+
+AI reviewed the requirements and architecture, redesigned the page and file list for desktop and mobile, improved the empty state, and added selected-file feedback and drag-and-drop handling to the existing asynchronous upload form. The server-side lifecycle, validation, and RabbitMQ workflows were not changed.
+
+### Developer Review and Verification
+
+No independent developer review result was provided. `npm run build`, `php artisan test` (29 tests, 167 assertions), `./vendor/bin/pint --test`, and `git diff --check` passed. The local page returned HTTP 200. Browser visual inspection could not run because no browser instance was available.
+
+---
+
+## Prompt 20 — Dedicated File Management Page
+
+The developer pointed out that the assignment requires a separate page for listing and manually deleting uploaded files. Review showed that `GET /files` returned only an HTML fragment while the full list was on the upload page. AI moved the full list and deletion controls to `GET /files`, kept the fragment at `GET /files/list` for refresh after deletion, and linked the upload page to the management page. A successful asynchronous upload now opens the management page. The existing file lifecycle and RabbitMQ workflow were preserved.
+
+---
+
+## Prompt 21 — Interface Polish and Deletion Confirmation
+
+The developer requested a more harmonious interface, subtle entrance animation, and a confirmation dialog for manual deletion. AI refined shared spacing and surface styles, added motion that respects reduced-motion preferences, and placed a Bootstrap confirmation modal before the existing asynchronous deletion request. The modal shows the selected file name with safe text insertion. The backend deletion and RabbitMQ workflow were not changed. Pint, the PHP test suite (29 tests, 178 assertions), the Vite build, and `git diff --check` passed. The Docker images were rebuilt and services restarted. Browser visual interaction could not be inspected because no browser connection was available.

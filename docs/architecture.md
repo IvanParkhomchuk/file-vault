@@ -293,6 +293,8 @@ The required frontend stack is:
 
 File upload must be asynchronous.
 
+The home page (`GET /`) contains the upload form. On successful asynchronous upload, the browser opens the dedicated management page (`GET /files`). That page displays stored-file metadata and offers asynchronous manual deletion, refreshing its list through `GET /files/list`.
+
 The frontend is responsible for interaction and presentation only.
 
 Validation and business rules remain authoritative on the server.

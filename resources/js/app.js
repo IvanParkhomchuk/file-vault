@@ -6,22 +6,22 @@ window.$ = window.jQuery = $;
 $(function () {
     const $form = $('#upload-form');
 
-    if (!$form.length) {
-        return;
-    }
-
     const $file = $('#file');
     const $fileError = $('#file-error');
     const $uploadStatus = $('#upload-status');
     const $listStatus = $('#list-status');
     const $list = $('#file-list');
     const $button = $('#upload-button');
+    const $dropZone = $('#drop-zone');
+    const $selectedFile = $('#selected-file');
+    const $deleteModal = $('#delete-file-modal');
+    let $selectedDeleteButton = null;
 
     function refreshList(onSuccess, failureMessage = 'The list could not be refreshed. Reload the page.') {
         $list.attr('aria-busy', 'true');
 
         $.ajax({
-            url: $form.data('list-url'),
+            url: $list.data('list-url'),
             method: 'GET',
             dataType: 'html',
         }).done(function (html) {
@@ -42,17 +42,35 @@ $(function () {
 
     function clearError() {
         $file.removeClass('is-invalid').removeAttr('aria-invalid');
+        $dropZone.removeClass('is-invalid');
         $fileError.text('');
     }
 
-    $file.on('change', clearError);
+    $file.on('change', function () {
+        clearError();
+        const name = this.files?.[0]?.name;
+        $selectedFile.toggleClass('d-none', !name).text(name ? `Selected: ${name}` : '');
+    });
+
+    $dropZone.on('dragenter dragover', function (event) {
+        event.preventDefault();
+        $dropZone.addClass('is-dragging');
+    }).on('dragleave dragend drop', function (event) {
+        event.preventDefault();
+        $dropZone.removeClass('is-dragging');
+    }).on('drop', function (event) {
+        const files = event.originalEvent.dataTransfer?.files;
+        if (files?.length) {
+            $file[0].files = files;
+            $file.trigger('change');
+        }
+    });
 
     $form.on('submit', function (event) {
         event.preventDefault();
         clearError();
         $uploadStatus.addClass('d-none').text('');
-        $listStatus.addClass('d-none').text('');
-        $button.prop('disabled', true).text('Uploading…');
+        $button.prop('disabled', true).find('span:first').text('Uploading…');
 
         $.ajax({
             url: $form.attr('action'),
@@ -64,15 +82,14 @@ $(function () {
             headers: { Accept: 'application/json' },
         }).done(function () {
             $form[0].reset();
-            showStatus($uploadStatus, 'File uploaded. Refreshing the list.');
-            refreshList(function () {
-                showStatus($uploadStatus, 'File uploaded. The list is up to date.');
-            }, 'The file was uploaded, but the list could not be refreshed. Reload the page.');
+            $selectedFile.addClass('d-none').text('');
+            window.location.assign($form.data('manage-url'));
         }).fail(function (xhr) {
             if (xhr.status === 422) {
                 const message = xhr.responseJSON?.errors?.file?.[0];
                 if (message) {
                     $file.addClass('is-invalid').attr('aria-invalid', 'true');
+                    $dropZone.addClass('is-invalid');
                     $fileError.text(message);
                 }
                 showStatus($uploadStatus, message || 'The file failed validation. Check the selected file.', true);
@@ -89,12 +106,26 @@ $(function () {
                 showStatus($uploadStatus, 'The server could not upload the file. Try again later.', true);
             }
         }).always(function () {
-            $button.prop('disabled', false).text('Upload');
+            $button.prop('disabled', false).find('span:first').text('Upload document');
         });
     });
 
-    $list.on('click', '.delete-file', function () {
-        const $deleteButton = $(this);
+    $deleteModal.on('show.bs.modal', function (event) {
+        $selectedDeleteButton = $(event.relatedTarget);
+        $('#delete-file-name').text($selectedDeleteButton.attr('data-file-name'));
+    });
+
+    $deleteModal.on('hidden.bs.modal', function () {
+        $selectedDeleteButton = null;
+    });
+
+    $('#confirm-delete').on('click', function () {
+        if (!$selectedDeleteButton?.length) {
+            return;
+        }
+
+        const $deleteButton = $selectedDeleteButton;
+        $selectedDeleteButton = null;
         $deleteButton.prop('disabled', true).text('Deleting…');
         $listStatus.addClass('d-none').text('');
 

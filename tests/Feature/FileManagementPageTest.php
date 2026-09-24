@@ -10,13 +10,23 @@ class FileManagementPageTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_page_shows_upload_form_and_empty_state(): void
+    public function test_upload_page_links_to_a_separate_empty_management_page(): void
     {
         $this->get(route('files.index'))
             ->assertOk()
-            ->assertSee('File Management')
+            ->assertSee('Upload a file')
             ->assertSee('name="file"', false)
-            ->assertSee('No files have been uploaded yet.');
+            ->assertSee('href="'.route('files.manage').'"', false)
+            ->assertDontSee('id="file-list"', false);
+
+        $this->get(route('files.manage'))
+            ->assertOk()
+            ->assertSee('Manage files')
+            ->assertSee('No files have been uploaded yet.')
+            ->assertSee('id="delete-file-modal"', false)
+            ->assertSee('id="confirm-delete"', false)
+            ->assertSee('href="'.route('files.index').'"', false)
+            ->assertDontSee('id="upload-form"', false);
     }
 
     public function test_page_and_refresh_endpoint_show_saved_metadata_safely(): void
@@ -25,7 +35,9 @@ class FileManagementPageTest extends TestCase
         $this->travel(1)->minutes();
         $newer = $this->file('<report>.docx', 2048);
 
-        foreach ([route('files.index'), route('files.list')] as $url) {
+        $this->get(route('files.index'))->assertDontSee('older.pdf');
+
+        foreach ([route('files.manage'), route('files.list')] as $url) {
             $response = $this->get($url)->assertOk()
                 ->assertSee('&lt;report&gt;.docx', false)
                 ->assertDontSee('<report>.docx', false)
@@ -33,6 +45,11 @@ class FileManagementPageTest extends TestCase
                 ->assertSee('2.0 KB')
                 ->assertSee('Delete')
                 ->assertSee('data-delete-url="'.route('files.destroy', $newer).'"', false);
+
+            if ($url === route('files.manage')) {
+                $response->assertSee('data-bs-target="#delete-file-modal"', false)
+                    ->assertSee('data-file-name="&lt;report&gt;.docx"', false);
+            }
 
             $this->assertTrue(strpos($response->getContent(), '&lt;report&gt;.docx') < strpos($response->getContent(), 'older.pdf'));
         }

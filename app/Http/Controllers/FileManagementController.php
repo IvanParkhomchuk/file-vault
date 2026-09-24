@@ -10,7 +10,12 @@ class FileManagementController extends Controller
 {
     public function index(): View
     {
-        return view('files.index', ['files' => $this->files()]);
+        return view('files.index');
+    }
+
+    public function manage(): View
+    {
+        return view('files.manage', ['files' => $this->files()]);
     }
 
     public function list(): View
