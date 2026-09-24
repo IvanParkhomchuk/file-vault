@@ -31,7 +31,8 @@ class FileManagementPageTest extends TestCase
                 ->assertDontSee('<report>.docx', false)
                 ->assertSee('older.pdf')
                 ->assertSee('2.0 KB')
-                ->assertSee('Delete');
+                ->assertSee('Delete')
+                ->assertSee('data-delete-url="'.route('files.destroy', $newer).'"', false);
 
             $this->assertTrue(strpos($response->getContent(), '&lt;report&gt;.docx') < strpos($response->getContent(), 'older.pdf'));
         }

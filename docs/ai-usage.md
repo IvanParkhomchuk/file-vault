@@ -667,6 +667,36 @@ Pending developer review. Manual and scheduled deletion have not yet been implem
 
 ---
 
+## Prompt 14 — Shared Deletion and Manual Action
+
+### Goal
+
+Implement one deletion workflow and connect it to the management page.
+
+### Prompt
+
+```text
+Read the requirements, architecture, and RabbitMQ decision. Implement one
+workflow for filesystem removal, metadata, and publication. Add manual HTTP
+deletion and UI interaction. Handle repeat requests, missing physical files,
+filesystem failure, and RabbitMQ failure after removal. Preserve recovery
+details, test those paths, and run formatting, tests, and the frontend build.
+```
+
+### Why This Prompt Was Structured This Way
+
+It makes the partial failure behavior explicit and keeps the controller thin while the future expiration path can reuse the same service.
+
+### AI Contribution
+
+AI selected a metadata-backed retry scheme, implemented the shared service, endpoint, interface interaction, tests, and architecture notes. The metadata row remains until publication is confirmed, with the original deletion time and source saved for retries.
+
+### Developer Review
+
+Pending developer review.
+
+---
+
 ## Final AI Usage Summary
 
 Complete this section before submission.

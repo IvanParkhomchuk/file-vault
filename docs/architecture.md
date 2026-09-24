@@ -97,7 +97,7 @@ The `stored_files` table holds the original name, Laravel filesystem disk and re
 
 `POST /files` validates one multipart upload through Laravel's file rules for PDF/DOCX content, matching filename extension, and a 10 MiB maximum. The controller returns JSON with HTTP 201 on success or Laravel's HTTP 422 validation response. A small upload service writes a UUID-named file through the configured disk before creating its metadata record. If metadata creation fails, it deletes the newly written file and propagates the failure. Uploads run in the request; no background job is needed for this workflow.
 
-No deletion status or extra table is needed at this stage. A future shared deletion workflow can retain the metadata record until storage deletion and RabbitMQ publication succeed, then remove it. Publication failure after physical deletion remains a partial state to handle in that workflow; this schema alone does not provide exactly-once publication.
+The record also has nullable `deleted_at` and `deletion_source` fields. They preserve the original notification details while publication is pending. A record is removed only after the broker confirms publication.
 
 ---
 
@@ -145,6 +145,12 @@ may own this workflow.
 The exact class name is not an architectural requirement.
 
 The important requirement is that deletion behavior has a single application-level owner.
+
+`DeleteStoredFile` locks the metadata row, checks the recorded disk and path, removes an existing physical file, records the deletion time and source, publishes the notification, and removes the metadata only after broker confirmation. The lock serializes requests for the same record. A second request after completion receives HTTP 404 and does not publish again.
+
+If the physical file is already absent while metadata exists, the workflow treats it as an incomplete deletion: it publishes the notification and removes the metadata. The manual endpoint reports that the file was already missing. A filesystem check or deletion failure keeps the metadata and does not publish. After physical removal, a RabbitMQ failure returns HTTP 503 and keeps the record with `deleted_at` and `deletion_source`; a later call to the same workflow retries publication without needing the physical file. The management page keeps that record visible so the user can retry. The eventual expiration command can retry the same record through this workflow. This is a retry-on-next-invocation scheme, without a separate outbox or worker.
+
+The database transaction commits the pending notification state even when publication fails. It cannot atomically commit a filesystem deletion and broker confirmation. If metadata persistence fails after physical removal, the record still exists and a retry can reconcile the missing file. If the broker accepted a message but its confirmation was lost, or if removing metadata fails after confirmation, a retry can publish a duplicate. The consumer should deduplicate using the file ID and deletion time when it needs exactly-once effects.
 
 ---
 

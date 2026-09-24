@@ -22,11 +22,10 @@
                         <td>{{ number_format($file->size / 1024, 1) }} KB</td>
                         <td><time datetime="{{ $file->uploaded_at->toIso8601String() }}">{{ $file->uploaded_at->format('d.m.Y H:i') }}</time></td>
                         <td><time datetime="{{ $file->expires_at->toIso8601String() }}">{{ $file->expires_at->format('d.m.Y H:i') }}</time></td>
-                        <td><button type="button" class="btn btn-outline-secondary btn-sm" data-file-id="{{ $file->id }}" disabled aria-label="Delete {{ $file->original_name }} (not available yet)">Delete</button></td>
+                        <td><button type="button" class="btn btn-outline-danger btn-sm delete-file" data-delete-url="{{ route('files.destroy', $file) }}" aria-label="Delete {{ $file->original_name }}">Delete</button></td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
-    <p class="small text-secondary">Manual deletion will be available when the server endpoint is implemented.</p>
 @endif

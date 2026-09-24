@@ -26,6 +26,7 @@ class StoredFile extends Model
             'size' => 'integer',
             'uploaded_at' => 'datetime',
             'expires_at' => 'datetime',
+            'deleted_at' => 'datetime',
         ];
     }
 }
