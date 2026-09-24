@@ -844,3 +844,27 @@ No independent human review result was provided. On 2026-09-24, the AI agent exe
 | `git diff --check` | Passed with no whitespace errors. |
 
 The current local Compose `.env` lacks `DELETION_NOTIFICATION_EMAIL`, so the scheduler probe supplied a temporary environment override. An unattended run with this local configuration would fail publication until the required address is set. A broker confirmation lost after acceptance, or a database failure after confirmation, can still cause a duplicate on retry; the message's file ID and deletion time support consumer deduplication as described in the architecture. The exact minute-by-minute behavior of the long-running scheduler daemon was not observed in this review.
+
+---
+
+## Prompt 18 — Assignment Compliance Review and Upload Limit
+
+### Goal
+
+Compare the current implementation with `Test_task__Middle_PHP.docx`, close confirmed gaps, and run the repository checks without changing existing data.
+
+### Prompt
+
+The developer requested a requirement-by-requirement review of code, documentation, tests, and Docker setup; focused fixes; verification with Pint, the test suite, the frontend build, and available Docker services; and a report of remaining limits.
+
+### Why This Prompt Was Structured This Way
+
+It required code and test evidence before changes, protected uncommitted work, and required reporting checks that could not be run.
+
+### AI Contribution
+
+The review found that the running Docker PHP configuration allowed only 2M file uploads and 8M POST bodies, preventing the advertised 10 MiB upload. AI added Docker PHP settings of 10M and 12M, a test that accepts a PDF of exactly 10 MiB, and local PHP setup instructions. It also corrected stale README wording about the management page and clarified local RabbitMQ notification setup.
+
+### Developer Review and Actual Verification
+
+No independent developer review result was provided. On 2026-09-24, the AI agent ran `./vendor/bin/pint --test` (passed), `php artisan test` (29 tests and 167 assertions passed), `npm run build` (passed), and `git diff --check` (passed). The running Compose services were healthy. The existing app container reported PHP limits of 2M and 8M. `docker compose build app` passed, and a disposable container from the rebuilt image reported 10M and 12M. The running app and scheduler containers were not replaced, so their new PHP limits were not verified in a live HTTP upload. No real browser upload was exercised in this review.

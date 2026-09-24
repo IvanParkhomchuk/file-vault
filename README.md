@@ -22,15 +22,17 @@ The application waits for MySQL and RabbitMQ health checks. It creates a persist
 - MySQL
 - RabbitMQ for deletion notifications
 
-On macOS with Homebrew, start installed services when needed with `brew services start mysql` and `brew services start rabbitmq`. The setup does not require RabbitMQ to display the starter page.
+On macOS with Homebrew, start installed services when needed with `brew services start mysql` and `brew services start rabbitmq`. RabbitMQ is required when a file is deleted.
 
 ## Local setup without Docker
 
 1. Install dependencies: `composer install` and `npm install`.
 2. Copy `.env.example` to `.env` and run `php artisan key:generate`. Keep `.env` local.
-3. Start MySQL, create a database and user, then set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` in `.env`.
+3. Start MySQL, create a database and user, then set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` in `.env`. Set the RabbitMQ connection values and `DELETION_NOTIFICATION_EMAIL` for deletion notifications.
 4. Run `php artisan migrate`.
 5. Run `npm run dev` and `php artisan serve` in separate terminals.
+
+Set `upload_max_filesize` to at least `10M` and `post_max_size` above `10M` in the PHP configuration used by the web server (for example, `12M`). The Docker image sets these values to `10M` and `12M`. PHP rejects larger requests before Laravel can return its file validation error.
 
 For automatic expiration without Docker, also run `php artisan schedule:work` in a separate terminal. You can invoke one expiration pass with `php artisan files:delete-expired`.
 

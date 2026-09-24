@@ -94,6 +94,18 @@ class FileUploadTest extends TestCase
         $this->assertSame([], Storage::disk(config('filesystems.uploads_disk'))->allFiles());
     }
 
+    public function test_pdf_of_exactly_10_mb_is_accepted(): void
+    {
+        $content = "%PDF-1.4\n".str_repeat(' ', 10 * 1024 * 1024 - strlen("%PDF-1.4\n%%EOF")).'%%EOF';
+
+        $this->postJson(route('files.store'), [
+            'file' => UploadedFile::fake()->createWithContent('limit.pdf', $content),
+        ])->assertCreated()->assertJsonPath('size', 10 * 1024 * 1024);
+
+        $file = StoredFile::sole();
+        Storage::disk($file->disk)->assertExists($file->path);
+    }
+
     public function test_file_is_removed_when_metadata_cannot_be_persisted(): void
     {
         StoredFile::creating(function (): void {
