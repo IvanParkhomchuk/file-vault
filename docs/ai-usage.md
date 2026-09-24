@@ -517,6 +517,32 @@ Pending developer review. Dependency installation, Composer validation, PHP form
 
 ---
 
+## Prompt 9 — Docker Setup
+
+### Goal
+
+Make the existing Laravel foundation runnable through Docker Compose.
+
+### Prompt
+
+```text
+Add Docker so the project can be deployed and started with it.
+```
+
+### Why This Prompt Was Structured This Way
+
+The prompt extends the previously completed project setup. The documented stack and feature boundaries remain the source of truth.
+
+### AI Contribution
+
+AI added a PHP 8.4 application image with Vite assets, MySQL, RabbitMQ, and Laravel Scheduler Compose services, persistent volumes, health checks, startup migrations, and Docker setup instructions.
+
+### Developer Review
+
+Pending developer review. Compose configuration, image build, service health, database migration, scheduler startup, persistent application key sharing, and an HTTP 200 response were checked with temporary local configuration. The temporary containers were stopped afterward.
+
+---
+
 ## Final AI Usage Summary
 
 Complete this section before submission.

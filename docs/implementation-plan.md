@@ -8,6 +8,7 @@ The order below follows [requirements.md](requirements.md) and the boundaries in
 - Install PHP dependencies, the RabbitMQ PHP client, Bootstrap, and jQuery.
 - Set MySQL as the example database connection and document local setup.
 - Preserve the Laravel starter application without implementing product workflows.
+- Provide a Docker Compose setup for Laravel, MySQL, and RabbitMQ, with persistent data and a documented startup path.
 
 ## 1. File metadata and storage foundation
 

@@ -42,6 +42,7 @@ Do not replace required technologies with alternatives unless explicitly request
 * `tests/Feature/` — application behavior and integration tests.
 * `tests/Unit/` — isolated unit tests.
 * `docs/` — requirements, architecture, and AI usage documentation.
+* `docker/`, `Dockerfile`, `compose.yaml` — container startup and local service orchestration.
 
 Keep this map aligned with the actual repository structure.
 
@@ -102,6 +103,18 @@ npm run build
 ```
 
 Use repository-provided commands instead if the project setup later defines Docker or another execution environment.
+
+Run the application with Docker after configuring `.env` as described in `README.md`:
+
+```bash
+docker compose up --build -d
+```
+
+Stop Docker services without removing persisted data:
+
+```bash
+docker compose down
+```
 
 ## Architecture Rules
 
