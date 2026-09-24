@@ -95,6 +95,8 @@ Do not store physical file contents in the database.
 
 The `stored_files` table holds the original name, Laravel filesystem disk and relative path, MIME type, byte size, upload time, and expiry time. Eloquent assigns `uploaded_at` on creation and sets `expires_at` exactly 24 hours later. The configured upload disk defaults to a private local disk outside the public web root. Each record retains its disk name so a later configuration change does not prevent deletion or retry of an existing file.
 
+`POST /files` validates one multipart upload through Laravel's file rules for PDF/DOCX content, matching filename extension, and a 10 MiB maximum. The controller returns JSON with HTTP 201 on success or Laravel's HTTP 422 validation response. A small upload service writes a UUID-named file through the configured disk before creating its metadata record. If metadata creation fails, it deletes the newly written file and propagates the failure. Uploads run in the request; no background job is needed for this workflow.
+
 No deletion status or extra table is needed at this stage. A future shared deletion workflow can retain the metadata record until storage deletion and RabbitMQ publication succeed, then remove it. Publication failure after physical deletion remains a partial state to handle in that workflow; this schema alone does not provide exactly-once publication.
 
 ---

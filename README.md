@@ -1,6 +1,6 @@
 # File Lifecycle Manager
 
-Laravel 13 project for temporary PDF and DOCX storage. The application features are planned in [docs/implementation-plan.md](docs/implementation-plan.md). The repository currently includes file metadata storage; upload, management, expiration processing, and RabbitMQ publication are still to be implemented.
+Laravel 13 project for temporary PDF and DOCX storage. The application features are planned in [docs/implementation-plan.md](docs/implementation-plan.md). The repository currently includes server-side upload and file metadata storage; the upload interface, management, expiration processing, and RabbitMQ publication are still to be implemented.
 
 ## Docker setup
 
@@ -34,7 +34,7 @@ On macOS with Homebrew, start installed services when needed with `brew services
 
 Uploaded file content should be written through the Laravel disk selected by `FILE_UPLOAD_DISK` (default: `uploads`). This disk stores files under `storage/app/uploads`, outside the public web root. Keep any replacement disk private; never select the `public` disk for uploaded documents. The metadata record stores the disk and relative path so later deletion attempts can locate the original object even if the configured default changes.
 
-The default Laravel page is available at `http://localhost:8000`. Bootstrap and jQuery are installed through Vite. File upload, management, expiration, and RabbitMQ publication are not implemented yet.
+The default Laravel page is available at `http://localhost:8000`. Bootstrap and jQuery are installed through Vite. The server accepts one multipart file at `POST /files` in the `file` field. Submit it with `Accept: application/json`; success returns HTTP 201 with the file ID, original name, MIME type, byte size, upload time, and expiration time. Invalid files return HTTP 422 with JSON validation errors. PDF and DOCX are accepted up to 10 MiB, with MIME type and extension checked on the server. The asynchronous upload interface, management, expiration processing, and RabbitMQ publication are not implemented yet.
 
 For a production asset bundle, run `npm run build`.
 

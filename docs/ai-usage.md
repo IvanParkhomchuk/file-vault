@@ -581,6 +581,37 @@ Pending developer review. The schema omits deletion status and stores the origin
 
 ---
 
+## Prompt 11 — Server-Side File Upload
+
+### Goal
+
+Implement the HTTP upload endpoint using the existing metadata model and private disk.
+
+### Prompt
+
+```text
+Implement an HTTP endpoint for one PDF or DOCX upload. Validate content type and
+the 10 MB limit on the server, store it under a safe generated name, persist
+metadata with 24-hour expiration, return asynchronous-friendly HTTP responses,
+and clean up the physical file if metadata persistence fails. Keep the controller
+short, do not add an upload queue or unrelated file operations, and test the
+required success and failure paths. Run pint --test and php artisan test.
+```
+
+### Why This Prompt Was Structured This Way
+
+It limits the work to server upload behavior and calls out the partial-write case, which spans filesystem and database operations.
+
+### AI Contribution
+
+AI added a thin upload controller, a service coordinating storage and metadata, content-aware Laravel validation, and behavioral tests for accepted files, rejected content and size, persistence, and cleanup.
+
+### Developer Review
+
+Pending developer review. Verification outcomes are reported with the implementation.
+
+---
+
 ## Final AI Usage Summary
 
 Complete this section before submission.
